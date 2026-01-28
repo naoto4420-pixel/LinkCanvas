@@ -11,9 +11,11 @@
     </div>
   <% end %>
 
+  <!-- ボード選択用のセレクトボックス -->
   <div class="my-5">
-    <%= form.label :board_id %>
-    <%= form.text_field :board_id, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": link.errors[:board_id].none?, "border-red-400 focus:outline-red-600": link.errors[:board_id].any?}] %>
+    <%= form.label :board_id, "追加するボード" %>
+    <%# ログインユーザーのボード一覧から選択させる %>
+    <%= form.collection_select :board_id, current_user.boards, :id, :name, { prompt: "ボードを選択してください" }, { class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" } %>
   </div>
 
   <div class="my-5">
