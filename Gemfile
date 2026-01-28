@@ -66,4 +66,14 @@ group :test do
   gem "selenium-webdriver"
 end
 
+# CSS導入
 gem "tailwindcss-rails", "~> 4.4"
+
+# 認証機能
+gem 'devise'
+
+# OGP取得
+gem 'metainspector'
+
+# 画像加工 (Active Storageで使用)
+gem 'image_processing', '~> 1.2'
