@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style>
+      body { width: 250px; padding: 10px; font-family: sans-serif; }
+      h1 { font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+      button { width: 100%; margin-top: 10px; padding: 8px; cursor: pointer; }
+      .status { margin-top: 10px; font-size: 12px; color: #666; }
+    </style>
+  </head>
+  <body>
+    <h1>LinkCanvas</h1>
+    
+    <div class="status">
+      連携状態: <span id="connection-status">未接続</span>
+    </div>
+
+    <!-- 今後実装する機能ボタン -->
+    <button id="save-ogp">このページを保存(OGP)</button>
+    <button id="save-screenshot">スクショを撮って保存</button>
+    <button id="open-options">設定画面を開く</button>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
