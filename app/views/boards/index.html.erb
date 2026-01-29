@@ -5,6 +5,18 @@
     <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
   <% end %>
 
+  <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+    <div class="flex">
+      <div class="ml-3">
+        <p class="text-sm text-yellow-700">
+          <span class="font-bold">拡張機能用APIトークン:</span>
+          <code class="bg-yellow-100 px-2 py-1 rounded select-all"><%= current_user.authentication_token %></code>
+        </p>
+        <p class="text-xs text-yellow-600 mt-1">※この文字列をコピーして、Chrome拡張機能の設定画面に入力してください。</p>
+      </div>
+    </div>
+  </div>
+
   <div class="flex justify-between items-center">
     <h1 class="font-bold text-4xl">Boards</h1>
     <%= link_to "New board", new_board_path, class: "rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white block font-medium" %>

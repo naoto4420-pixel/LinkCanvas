@@ -1,1 +1,43 @@
-<h1>Settings</h1>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>LinkCanvas Settings</title>
+    <style>
+      body { padding: 20px; font-family: sans-serif; width: 300px; }
+      input[type="text"] { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+      button { margin-top: 15px; padding: 8px 15px; cursor: pointer; background: #2563EB; color: white; border: none; border-radius: 4px; }
+      button:hover { background: #1D4ED8; }
+      .msg { margin-top: 10px; font-size: 12px; color: green; }
+      
+      /* スイッチ周りのスタイル */
+      .setting-group { margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
+      label.checkbox-label { display: flex; align-items: center; cursor: pointer; }
+      input[type="checkbox"] { margin-right: 10px; transform: scale(1.2); }
+    </style>
+  </head>
+  <body>
+    <h2>LinkCanvas 設定</h2>
+    
+    <label>
+      API Token:
+      <input type="text" id="api-token" placeholder="Webアプリからコピーしたトークン">
+    </label>
+
+    <!-- 自動保存設定 -->
+    <div class="setting-group">
+      <label class="checkbox-label">
+        <input type="checkbox" id="auto-save">
+        Chromeのブックマークと自動連携する
+      </label>
+      <p style="font-size: 10px; color: #666; margin-top: 5px; margin-left: 24px;">
+        ONにすると、Chromeでブックマーク(★)した際に、LinkCanvasにも自動で保存されます。
+      </p>
+    </div>
+
+    <button id="save">保存する</button>
+    <div id="status" class="msg"></div>
+
+    <script src="options.js"></script>
+  </body>
+</html>
