@@ -1,33 +1,74 @@
-<div class="w-full">
-  <% if notice.present? %>
-    <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-lg inline-block" id="notice"><%= notice %></p>
-  <% end %>
+<div class="w-full h-screen flex flex-col">
+  <!-- ヘッダーエリア -->
+  <div class="flex-none p-4 bg-white shadow z-10">
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+      <div class="flex">
+        <div class="ml-3">
+          <p class="text-sm text-yellow-700">
+            <span class="font-bold">拡張機能用APIトークン:</span>
+            <code class="bg-yellow-100 px-2 py-1 rounded select-all"><%= current_user.authentication_token %></code>
+          </p>
+        </div>
+      </div>
+    </div>
 
-  <div class="flex justify-between items-center">
-    <h1 class="font-bold text-4xl">Links</h1>
-    <%= link_to "New link", new_link_path, class: "rounded-lg py-3 px-5 bg-blue-600 text-white block font-medium" %>
+    <div class="flex justify-between items-center">
+      <h1 class="font-bold text-4xl">LinkCanvas</h1>
+      <%= link_to "New link", new_link_path, class: "rounded-lg py-3 px-5 bg-blue-600 text-white block font-medium" %>
+    </div>
   </div>
 
-  <div id="links" class="min-w-full mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+  <!-- 
+    ▼ キャンバスエリア 
+    bg-gray-50: 薄いグレーの背景
+    relative: 子要素(カード)の absolute 配置の基準点になる
+    overflow-auto: 画面より広くなったらスクロールバーを出す
+    min-h-[2000px]: 縦に長いキャンバスを確保
+  -->
+  <div class="flex-grow bg-gray-50 relative overflow-auto" style="min-height: 2000px; min-width: 2000px;">
     <% @links.each do |link| %>
-      <div class="bg-white shadow rounded-lg p-4 border border-gray-200">
-        <!-- ▼ 画像表示エリア -->
-        <div class="w-full h-40 bg-gray-100 rounded mb-4 overflow-hidden flex items-center justify-center">
+      <!-- 
+        ▼ カード要素
+        data-controller="canvas": Stimulusコントローラーを接続
+        data-canvas-x-value: DBのX座標をJSに渡す
+        data-canvas-y-value: DBのY座標をJSに渡す
+        data-canvas-update-url-value: 保存先のURL (/links/1)
+        data-action="mousedown->canvas#dragStart": マウスダウンでドラッグ開始
+      -->
+      <div 
+        data-controller="canvas"
+        data-canvas-id-value="<%= link.id %>"
+        data-canvas-x-value="<%= link.x_coordinate %>"
+        data-canvas-y-value="<%= link.y_coordinate %>"
+        data-canvas-update-url-value="<%= link_path(link) %>"
+        data-action="mousedown->canvas#dragStart"
+        class="bg-white shadow-lg rounded-lg border border-gray-200 w-64 absolute select-none cursor-grab hover:shadow-xl transition-shadow"
+      >
+        <!-- 画像エリア -->
+        <div class="w-full h-32 bg-gray-100 rounded-t-lg overflow-hidden flex items-center justify-center pointer-events-none">
           <% if link.thumbnail.attached? %>
-            <!-- 画像がある場合: リサイズして表示 -->
-            <%= image_tag link.thumbnail, class: "object-cover w-full h-full" %>
+            <%= image_tag link.thumbnail.variant(resize_to_limit: [300, 200]), class: "object-cover w-full h-full", draggable: "false" %>
           <% else %>
-            <!-- 画像がない場合: デフォルト表示（テキストなど） -->
             <span class="text-gray-400">No Image</span>
           <% end %>
         </div>
 
-        <h2 class="font-bold text-lg mb-2 truncate"><%= link.title.presence || "No Title" %></h2>
-        <p class="text-sm text-gray-500 mb-4 truncate"><%= link.url %></p>
+        <!-- テキストエリア -->
+        <div class="p-3">
+          <h2 class="font-bold text-sm mb-1 truncate text-gray-800" title="<%= link.title %>">
+            <%= link.title.presence || "No Title" %>
+          </h2>
+          <p class="text-xs text-gray-500 mb-2 truncate"><%= link.url %></p>
 
-        <div class="flex justify-between items-center text-sm">
-          <%= link_to "Show", link, class: "text-blue-600 hover:underline" %>
-          <%= link_to "Edit", edit_link_path(link), class: "text-gray-600 hover:underline" %>
+          <div class="flex justify-between items-center text-xs mt-2 border-t pt-2">
+            <!-- リンクをクリックした時はドラッグ判定させないために stopPropagation などを考慮する必要があるが、一旦シンプルにaタグ -->
+            <a href="<%= link.url %>" target="_blank" class="text-blue-600 hover:underline font-bold" onmousedown="event.stopPropagation()">Visit</a>
+            
+            <div class="space-x-2">
+              <%= link_to "Show", link, class: "text-gray-500 hover:text-gray-700", onmousedown: "event.stopPropagation()" %>
+              <%= link_to "Edit", edit_link_path(link), class: "text-gray-500 hover:text-gray-700", onmousedown: "event.stopPropagation()" %>
+            </div>
+          </div>
         </div>
       </div>
     <% end %>
