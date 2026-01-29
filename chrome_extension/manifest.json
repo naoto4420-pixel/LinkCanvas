@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "LinkCanvas Extension",
+  "version": "1.0",
+  "description": "LinkCanvasへのブックマーク自動保存＆スクショ撮影ツール",
+  "permissions": [
+    "bookmarks",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "LinkCanvas設定"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  }
+}
