@@ -28,9 +28,7 @@ export default class extends Controller {
     // 左クリック以外は無視
     if (event.button !== 0) return
     
-    // リンクなどのクリックを邪魔しないように少し待つ等の処理も可能だが今回はシンプルに
-    // event.preventDefault() // ここでpreventDefaultするとリンクが飛べなくなるので注意
-
+    // ドラッグ状態オン
     this.isDragging = true
     
     // マウスカーソルと、カードの左上角とのズレを記録
@@ -40,7 +38,7 @@ export default class extends Controller {
 
     // カードを最前面に持ってくる（重なり順を上げる）
     this.element.style.zIndex = 1000
-    this.element.style.cursor = 'grabbing'
+    this.element.style.cursor = 'grabbing'  //  カーソルスタイル変更
 
     // 画面全体でマウスの動きを監視開始
     window.addEventListener('mousemove', this.drag)
@@ -54,11 +52,9 @@ export default class extends Controller {
     event.preventDefault() // テキスト選択などを防ぐ
 
     // 新しい位置を計算
-    const x = event.clientX - this.offsetX
     // ヘッダーの高さなどを考慮する必要があるが、今回は簡易的に計算
     // 親要素（キャンバス）からの相対位置に変換
     const parentRect = this.element.parentElement.getBoundingClientRect()
-    
     let newX = event.clientX - parentRect.left - this.offsetX
     let newY = event.clientY - parentRect.top - this.offsetY
 
@@ -79,9 +75,12 @@ export default class extends Controller {
   dragEnd = () => {
     if (!this.isDragging) return
     
+    // ドラッグ状態オフ
     this.isDragging = false
-    this.element.style.zIndex = 1 // 重なり順を戻す
-    this.element.style.cursor = 'grab'
+
+    // カードの重なり順を戻す
+    this.element.style.zIndex = 1 
+    this.element.style.cursor = 'grab'  //  カーソルスタイル変更
 
     // 監視を解除
     window.removeEventListener('mousemove', this.drag)

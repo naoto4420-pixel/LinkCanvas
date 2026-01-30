@@ -1,9 +1,8 @@
-<%= form_with(model: link, class: "contents") do |form| %>
+<%= form_with(model: link, class: "contents", data: { controller: "clipboard" }) do |form| %>
   <% if link.errors.any? %>
-    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-md mt-3">
+    <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3">
       <h2><%= pluralize(link.errors.count, "error") %> prohibited this link from being saved:</h2>
-
-      <ul class="list-disc ml-6">
+      <ul>
         <% link.errors.each do |error| %>
           <li><%= error.full_message %></li>
         <% end %>
@@ -11,34 +10,60 @@
     </div>
   <% end %>
 
-  <!-- ボード選択用のセレクトボックス -->
+  <!-- ボード選択 -->
   <div class="my-5">
-    <%= form.label :board_id, "追加するボード" %>
-    <%# ログインユーザーのボード一覧から選択させる %>
-    <%= form.collection_select :board_id, current_user.boards, :id, :name, { prompt: "ボードを選択してください" }, { class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" } %>
+    <%= form.label :board_id, "Board" %>
+    <%= form.collection_select :board_id, current_user.boards, :id, :name, { prompt: "ボードを選択" }, { class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" } %>
   </div>
 
-  <div class="my-5">
-    <%= form.label :url %>
-    <%= form.text_area :url, rows: 4, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": link.errors[:url].none?, "border-red-400 focus:outline-red-600": link.errors[:url].any?}] %>
+  <!-- 画像編集エリア -->
+  <div class="my-5 p-4 border border-gray-200 rounded-lg bg-gray-50">
+    <label class="block font-bold mb-2">Thumbnail Image</label>
+    
+    <!-- プレビュー表示エリア -->
+    <div data-clipboard-target="container" class="w-full h-48 bg-gray-200 rounded mb-4 flex items-center justify-center border border-dashed border-gray-400 overflow-hidden">
+      <% if link.thumbnail.attached? %>
+        <%= image_tag link.thumbnail.variant(resize_to_limit: [300, 200]), class: "object-contain w-full h-full" %>
+      <% else %>
+        <span class="text-gray-500 text-sm">No Image</span>
+      <% end %>
+    </div>
+
+    <div class="flex gap-2 items-center">
+      <!-- ファイル選択ボタン -->
+      <%= form.file_field :thumbnail, 
+          accept: "image/*",
+          class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100",
+          data: { clipboard_target: "input", action: "change->clipboard#previewFile" } 
+      %>
+
+      <!-- クリップボード貼り付けボタン -->
+      <button id="paste_button" 
+              type="button" 
+              data-action="click->clipboard#paste"
+              class="whitespace-nowrap px-4 py-2 bg-purple-600 text-sm font-medium rounded-full hover:bg-purple-700 transition">
+        <div class="text-black">📋 Paste</div>
+      </button>
+    </div>
+    <p id="paste_info" class="text-xs text-gray-500 mt-2">※PC内の画像を選択するか、画像をコピーして「Paste」ボタンを押してください。</p>
   </div>
 
   <div class="my-5">
     <%= form.label :title %>
-    <%= form.text_field :title, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": link.errors[:title].none?, "border-red-400 focus:outline-red-600": link.errors[:title].any?}] %>
+    <%= form.text_field :title, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
   </div>
 
   <div class="my-5">
-    <%= form.label :x_coordinate %>
-    <%= form.text_field :x_coordinate, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": link.errors[:x_coordinate].none?, "border-red-400 focus:outline-red-600": link.errors[:x_coordinate].any?}] %>
+    <%= form.label :url %>
+    <%= form.text_area :url, rows: 3, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
   </div>
 
-  <div class="my-5">
-    <%= form.label :y_coordinate %>
-    <%= form.text_field :y_coordinate, class: ["block shadow-sm rounded-md border px-3 py-2 mt-2 w-full", {"border-gray-400 focus:outline-blue-600": link.errors[:y_coordinate].none?, "border-red-400 focus:outline-red-600": link.errors[:y_coordinate].any?}] %>
-  </div>
+  <!-- 座標は編集画面では触らないので hidden にする -->
+  <%= form.hidden_field :x_coordinate %>
+  <%= form.hidden_field :y_coordinate %>
 
   <div class="inline">
-    <%= form.submit class: "w-full sm:w-auto rounded-md px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white inline-block font-medium cursor-pointer" %>
+    <%= form.submit class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer" %>
+    <%= link_to "Cancel", links_path, class: "ml-2 rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
   </div>
 <% end %>

@@ -46,7 +46,7 @@ class LinksController < ApplicationController
       if @link.update(link_params)
         # URLが変更されていたらOGPも再取得する
         OgpCreator.new(@link).call if url_changed && @link.save
-        
+
         format.html { redirect_to @link, notice: "Link was successfully updated.", status: :see_other }
         format.json { render :show, status: :ok, location: @link }
       else
@@ -74,6 +74,6 @@ class LinksController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def link_params
-      params.require(:link).permit(:board_id, :url, :title, :x_coordinate, :y_coordinate)
+      params.require(:link).permit(:board_id, :url, :title, :x_coordinate, :y_coordinate, :thumbnail)
     end
 end
