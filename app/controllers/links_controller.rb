@@ -3,7 +3,25 @@ class LinksController < ApplicationController
 
   # GET /links or /links.json
   def index
-    @links = Link.all
+    # パラメータに board_id がある場合、そのボードのリンクだけを取得
+    if params[:board_id]
+      # 自分のボードの中から探す（他人のボードは見れないようにする）
+      @board = current_user.boards.find(params[:board_id])
+      @links = @board.links
+    else
+      # ボード指定がない場合（直接 /links にアクセスした場合など）
+      # ユーザーがボードを持っていれば、最初のボードに自動転送する
+      first_board = current_user.boards.first
+      if first_board
+        redirect_to links_path(board_id: first_board.id)
+      else
+        # ボードが1つもない場合は空の配列
+        @links = []
+      end
+    end
+  rescue ActiveRecord::RecordNotFound
+    # 存在しないボードIDが指定された場合はボード一覧へ戻す
+    redirect_to boards_path, alert: "ボードが見つかりませんでした。"
   end
 
   # GET /links/1 or /links/1.json

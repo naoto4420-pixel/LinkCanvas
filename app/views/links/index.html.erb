@@ -1,20 +1,29 @@
 <div class="w-full h-screen flex flex-col">
   <!-- ヘッダーエリア -->
-  <div class="flex-none p-4 bg-white shadow z-10">
-    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-      <div class="flex">
-        <div class="ml-3">
-          <p class="text-sm text-yellow-700">
-            <span class="font-bold">拡張機能用APIトークン:</span>
-            <code class="bg-yellow-100 px-2 py-1 rounded select-all"><%= current_user.authentication_token %></code>
-          </p>
-        </div>
+  <div class="flex-none p-4 bg-white shadow z-10 flex justify-between items-center px-6">
+    
+    <!-- 左側: ボード情報と戻るボタン -->
+    <div class="flex items-center gap-4">
+      <%= link_to boards_path, class: "flex items-center text-gray-500 hover:text-blue-600 transition" do %>
+        <span class="text-xl font-bold">←</span>
+        <span class="ml-1 font-medium">Boards</span>
+      <% end %>
+      
+      <div class="h-8 w-px bg-gray-300 mx-2"></div>
+      
+      <div>
+        <% if @board %>
+          <h1 class="font-bold text-2xl text-gray-800"><%= @board.name %></h1>
+        <% else %>
+          <h1 class="font-bold text-2xl text-gray-800">All Links</h1>
+        <% end %>
       </div>
     </div>
 
-    <div class="flex justify-between items-center">
-      <h1 class="font-bold text-4xl">LinkCanvas</h1>
-      <%= link_to "New link", new_link_path, class: "rounded-lg py-3 px-5 bg-blue-600 text-white block font-medium" %>
+    <!-- 右側: アクションボタン -->
+    <div>
+      <%# 新規作成時に現在のボードIDを渡す %>
+      <%= link_to "＋ Add Link", new_link_path(board_id: @board&.id), class: "rounded-lg py-2.5 px-5 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow transition" %>
     </div>
   </div>
 
