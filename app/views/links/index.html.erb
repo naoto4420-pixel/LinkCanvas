@@ -64,9 +64,15 @@
             <!-- リンクをクリックした時はドラッグ判定させないために stopPropagation などを考慮する必要があるが、一旦シンプルにaタグ -->
             <a href="<%= link.url %>" target="_blank" class="text-blue-600 hover:underline font-bold" onmousedown="event.stopPropagation()">Visit</a>
             
-            <div class="space-x-2">
-              <%= link_to "Show", link, class: "text-gray-500 hover:text-gray-700", onmousedown: "event.stopPropagation()" %>
+            <div class="flex gap-2">
               <%= link_to "Edit", edit_link_path(link), class: "text-gray-500 hover:text-gray-700", onmousedown: "event.stopPropagation()" %>
+              
+              <!-- 削除ボタン (Trash Icon的な赤文字) -->
+              <%= link_to "Delete", link, 
+                  data: { turbo_method: :delete, turbo_confirm: "本当にこのカードを削除しますか？" }, 
+                  class: "text-red-400 hover:text-red-600 font-medium", 
+                  onmousedown: "event.stopPropagation()" 
+              %>
             </div>
           </div>
         </div>
