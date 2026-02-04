@@ -50,6 +50,7 @@ test:
 #
 production:
   <<: *default
+  adapter: postgresql
+  url: <%= ENV['DATABASE_URL'] %>
   database: link_canvas_production
   username: link_canvas
-  password: <%= ENV["LINK_CANVAS_DATABASE_PASSWORD"] %>
