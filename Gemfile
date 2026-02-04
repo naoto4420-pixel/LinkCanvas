@@ -77,3 +77,8 @@ gem 'image_processing', '~> 1.2'
 
 # CORS設定
 gem 'rack-cors'
+
+# Renderデプロイ用DB
+group :production do
+  gem 'pg'
+end
