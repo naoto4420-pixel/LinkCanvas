@@ -11,15 +11,34 @@
   </head>
   <body>
     <h1>LinkCanvas</h1>
-    
+
+    <div class="mode-select">
+      <div class="radio-group" style="display: flex; flex-direction: column; gap: 8px;">
+        <label>
+          <input type="radio" name="mode" value="ogp" checked>
+          🌐 OGP画像 (自動取得)
+        </label>
+        <label>
+          <input type="radio" name="mode" value="viewport">
+          📸 スクショ (表示領域全体)
+        </label>
+        <label title="左上から1280x720の範囲を切り抜きます">
+          <input type="radio" name="mode" value="fixed">
+          ✂️ スクショ (固定 1280x720)
+        </label>
+        <label style="color: #2563EB; font-weight: bold;">
+          <input type="radio" name="mode" value="range">
+          📐 スクショ (範囲選択)
+        </label>
+      </div>
+    </div>
+
+    <button id="save-btn">保存 / 画像更新</button>
+    <button id="open-options">設定画面を開く</button>
+
     <div class="status">
       連携状態: <span id="connection-status">未接続</span>
     </div>
-
-    <!-- 今後実装する機能ボタン -->
-    <button id="save-ogp">このページを保存(OGP)</button>
-    <button id="save-screenshot">スクショを撮って保存</button>
-    <button id="open-options">設定画面を開く</button>
 
     <script src="popup.js"></script>
   </body>

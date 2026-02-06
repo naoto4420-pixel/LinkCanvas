@@ -1,8 +1,21 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const statusDiv = document.getElementById('connection-status');
-  const saveOgpBtn = document.getElementById('save-ogp');
-  const saveScreenshotBtn = document.getElementById('save-screenshot'); // ボタン取得
+  const saveBtn = document.getElementById('save-btn');
   const openOptionsBtn = document.getElementById('open-options');
+
+  // 保存されているモードを読み込んでラジオボタンに反映
+  const stored = await chrome.storage.sync.get(['mode']);
+  if (stored.mode) {
+    const radio = document.querySelector(`input[name="mode"][value="${stored.mode}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  // ラジオボタン変更時にモードを保存
+  document.querySelectorAll('input[name="mode"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      chrome.storage.sync.set({ mode: e.target.value });
+    });
+  });
 
   // 共通の送信処理関数
   const sendToApi = async (data) => {
@@ -57,38 +70,94 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // ▼ [OGPモード] 保存ボタン
-  saveOgpBtn.addEventListener('click', async () => {
+  // 保存ボタン
+  saveBtn.addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab) return;
     
-    // URLとタイトルだけ送る（スクショなし）
-    sendToApi({
-      url: tab.url,
-      title: tab.title
-    });
-  });
+    // 選択モード取得
+    const selectedMode = document.querySelector('input[name="mode"]:checked');
+    const mode = selectedMode.value;
 
-  // ▼ [スクショモード] 保存ボタン（新規追加）
-  saveScreenshotBtn.addEventListener('click', async () => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab) return;
+    // 選択された方法で画像取得
+    switch (mode) {
+      case 'ogp':
+        // OGPモード: URLとタイトルだけ送信
+        sendToApi({ url: tab.url, title: tab.title });
+        
+        break;
+      case 'viewport':
+      case 'fixed':
+        // スクショ撮影が必要なモード
+        statusDiv.textContent = '撮影中...';
+        
+        chrome.tabs.captureVisibleTab(null, { format: 'png' }, (dataUrl) => {
+          // エラーチェック
+          if (chrome.runtime.lastError) {
+            console.error("撮影エラー:", chrome.runtime.lastError.message);
+            statusDiv.textContent = '撮影失敗: ' + chrome.runtime.lastError.message;
+            return;
+          }
 
-    statusDiv.textContent = '撮影中...';
-    
-    // 現在のタブを見えている範囲で撮影 (PNG形式のBase64文字列が返る)
-    chrome.tabs.captureVisibleTab(null, { format: 'png' }, (dataUrl) => {
-      if (chrome.runtime.lastError) {
-        statusDiv.textContent = '撮影失敗: ' + chrome.runtime.lastError.message;
-        return;
-      }
+          if (!dataUrl) {
+            statusDiv.textContent = '撮影失敗: データが空です';
+            return;
+          }
+          
+          switch (mode) {
+            case 'viewport':
+              // ビューポート: そのまま送信
+              sendToApi({ url: tab.url, title: tab.title, screenshot: dataUrl });
+              
+              break;
+            case 'fixed':
+              // 固定切り抜き: Canvasを使って加工
+              const img = new Image();
+              img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const width = 1280;
+                const height = 720;
+                
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height, 0, 0, width, height);
+                
+                const croppedDataUrl = canvas.toDataURL('image/png');
+                sendToApi({ url: tab.url, title: tab.title, screenshot: croppedDataUrl });
+              };
+              // 画像読み込みエラーハンドリング
+              img.onerror = (e) => {
+                 console.error("画像処理エラー", e);
+                 statusDiv.textContent = '画像処理に失敗しました';
+              };
+              img.src = dataUrl;
+              
+              break;
+          }
+        });
+        break;
+      default:
+        console.warn("未定義のモード:", mode);
+        statusDiv.textContent = 'エラー: 不明なモードです';
+        break;
+    }
 
-      // 撮影データを含めて送信
-      sendToApi({
-        url: tab.url,
-        title: tab.title,
-        screenshot: dataUrl // これがAPIの params[:screenshot] に入る
+    // 範囲選択の場合はメッセージを送信
+    if (mode === 'range') {
+      // 現在のアクティブなタブを特定
+      const [rangeTab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true
       });
-    });
+
+      if (rangeTab && rangeTab.url === bookmark.url) {
+        // contents.js用にメッセージを送る
+        chrome.tabs.sendMessage(rangeTab.id, {
+          action: "start_selection"
+        });
+      }
+    }
+
   });
 });

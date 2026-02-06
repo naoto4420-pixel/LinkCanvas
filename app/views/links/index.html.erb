@@ -56,9 +56,9 @@
         <!-- 画像エリア -->
         <div class="w-full h-32 bg-gray-100 rounded-t-lg overflow-hidden flex items-center justify-center pointer-events-none">
           <% if link.thumbnail.attached? %>
-            <%= image_tag link.thumbnail.variant(resize_to_limit: [300, 200]), class: "object-cover w-full h-full", draggable: "false" %>
+            <%= image_tag link.thumbnail.variant(resize_to_limit: [300, 200]), class: "object-contain w-full h-full", draggable: "false" %>
           <% else %>
-            <span class="text-gray-400">No Image</span>
+            <%= image_tag 'default_card.png' %>
           <% end %>
         </div>
 
