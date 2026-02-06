@@ -14,24 +14,46 @@ module Api
           return
         end
 
-        @link = board.links.build(link_params)
+        # 保存処理（トランザクションで実行）
+        ActiveRecord::Base.transaction do
+          # 同じリンクが既にあればそれを使用
+          @link = board.links.find_or_initialize_by(url: link_params[:url])
+          
+          # タイトルは新規作成時のみ、または送られてきた場合のみ更新
+          @link.title = link_params[:title] if @link.new_record? || link_params[:title].present?
+          
+          # メッセージ表示用変数
+          message = "保存しました！"
 
-        # スクショ画像が送られてきた場合
-        if params[:screenshot].present?
-          # Base64データをデコードしてActive Storageに保存
-          attach_screenshot(params[:screenshot])
-        else
-          # スクショがない場合はOGP自動取得サービスを実行
-          OgpCreator.new(@link).call
-        end
+          # 保存画像の設定
+          if params[:screenshot].present?
+            # スクショ画像が送られてきた場合は差し替え
+            @link.thumbnail.purge if @link.thumbnail.attached?
 
-        if @link.save
-          # 保存時に画像がなければ、強制的にデフォルト画像を付ける
+            # Base64データをデコードしてActive Storageに保存
+            case attach_screenshot(params[:screenshot], params[:crop].present? ? 'RECT' : 'FULL')
+            when 'AS_OK'
+                message = params[:crop].present? ? "範囲選択で保存しました！" : "ブラウザのスクリーンショットで保存しました！"
+            when 'AS_ALT'
+                message = "範囲選択での保存が失敗したため、ブラウザのスクリーンショットで保存しました"
+            end
+          elsif !@link.thumbnail.attached?
+            # 新規作成かつスクショでなくOGP自動取得サービスを実行
+            OgpCreator.new(@link).call
+          end
+
+          # 使用できない画像形式、または画像添付失敗の場合はViewでデフォルト画像を表示する設定
           ensure_thumbnail_attached(@link)
 
-          render json: { message: "保存しました！", link: @link }, status: :created
-        else
+          # データ保存
+          @link.save!
+          render json: { message: message, link: @link }, status: :created
+
+        rescue ActiveRecord::RecordInvalid => e # バリデーションエラーでの保存失敗
           render json: { error: @link.errors.full_messages }, status: :unprocessable_entity
+        rescue => e # その他エラー
+          Rails.logger.error "Error: #{e.message}"
+          render json: { error: "保存中にエラーが発生しました" }, status: :internal_server_error
         end
       end
 
@@ -51,47 +73,95 @@ module Api
       end
 
       # Base64文字列("data:image/png;base64,.....")を画像ファイルとして保存する処理
-      def attach_screenshot(base64_data)
+      ## 引数(mode)：'RECT'・・・範囲選択
+      ## 　　      ：'FULL'・・・ブラウザ全画面
+      ## 戻り値    ： AS_OK・・・正常保存
+      ## 　　　    ： AS_ALT・・・代替手段で保存
+      def attach_screenshot(base64_data, mode)
+        # モード指定が正しくない場合はエラー
+        raise ArgumentError, "Invalid mode" unless ['RECT', 'FULL'].include?(mode)
+
         # ヘッダー部分(data:image/png;base64,)を削除
-        data_index = base64_data.index('base64') + 7
-        file_data = base64_data[data_index..-1]
+        file_data = base64_data.split(',').last
+
+        # Base64デコード
         decoded_data = Base64.decode64(file_data)
 
-        # 一時ファイルとして保存してからattach
+        # ファイル設定
         filename = "screenshot_#{Time.now.to_i}.png"
-        @link.thumbnail.attach(
-          io: StringIO.new(decoded_data),
-          filename: filename,
-          content_type: 'image/png'
-        )
+          
+        # モードで分岐
+        case mode
+        when 'RECT'
+          Tempfile.create([filename, '.png'], binmode: true) do |file|
+            # データを一時ファイルに書き込んでシーク位置を先頭に戻す
+            file.write(decoded_data)
+            file.rewind
+
+            # crop情報取得
+            crop_params = params.require(:crop).permit(:x, :y, :width, :height)
+
+            # 画像を選択範囲で切り取る
+            processed = ImageProcessing::Vips
+              .source(file)
+              .crop(crop_params[:x].to_i,
+                    crop_params[:y].to_i,
+                    crop_params[:width].to_i,
+                    crop_params[:height].to_i
+              )
+              .call
+
+            # 画像保存
+            @link.thumbnail.attach(
+              io: processed,
+              filename: filename,
+              content_type: 'image/png'
+            )
+
+            return 'AS_OK'
+          end
+        when 'FULL' # 通常のスクリーンショットの場合
+          # 画像保存
+          @link.thumbnail.attach(
+            io: StringIO.new(decoded_data),
+            filename: filename,
+            content_type: 'image/png'
+          )
+
+          return 'AS_OK'
+        end
+
+      rescue => e
+        # mode指定が間違っていたらエラー
+        raise e if e.is_a?(ArgumentError)
+
+        # 範囲選択スクリーンショットの保存が失敗したら通常スクリーンショット保存を試行
+        begin
+          @link.thumbnail.attach(
+            io: StringIO.new(decoded_data),
+            filename: filename,
+            content_type: 'image/png'
+          )
+
+          return 'AS_ALT'
+        rescue final_error
+          # すべてのスクリーンショット保存が失敗したらロールバック
+          raise final_error
+        end
       end
 
-      # デフォルト画像添付用メソッド
+      # デフォルト画像表示設定メソッド
       def ensure_thumbnail_attached(link)
         # 画像が添付されており、かつ一般的な画像形式(JPEG/PNG/GIF)なら何もしない
         if link.thumbnail.attached?
           if link.thumbnail.content_type.in?(%w[image/jpeg image/png image/gif])
             return
           else
-            # SVGなどリサイズできない形式の場合は、一度削除してデフォルト画像に置き換える
+            # SVGなどリサイズできない形式の場合は、一度削除してViewでデフォルト画像に置き換える
             Rails.logger.warn "Unsupported image type detected: #{link.thumbnail.content_type}. Replacing with default."
             link.thumbnail.purge
           end
         end
-
-        # デフォルト画像のパス
-        default_path = Rails.root.join('app/assets/images/default_card.png')
-
-        # ファイルが存在すれば添付する
-        if File.exist?(default_path)
-          link.thumbnail.attach(
-            io: File.open(default_path),
-            filename: 'default_card.png',
-            content_type: 'image/png'
-          )
-        end
-      rescue => e
-        Rails.logger.error "Default image attach failed: #{e.message}"
       end
     end
   end

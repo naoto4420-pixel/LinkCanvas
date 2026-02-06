@@ -28,7 +28,7 @@ export default class extends Controller {
   async checkPermission() {
     try {
       const permission = await navigator.permissions.query({
-        name: "clipboard-read"
+        name: "clipboard-read" // GoogleChrome用の権限名
       });
       return permission.state;
     } catch (error) {
@@ -59,7 +59,7 @@ export default class extends Controller {
           // Fileオブジェクトに変換
           const file = new File([blob], "pasted_image.png", { type: imageType })
           
-          // input[type="file"] にデータをセットする魔法（DataTransfer）
+          // input[type="file"] にデータをセットする
           const dataTransfer = new DataTransfer()
           dataTransfer.items.add(file)
           this.inputTarget.files = dataTransfer.files
