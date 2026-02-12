@@ -14,19 +14,23 @@
 
     <div class="mode-select">
       <div class="radio-group" style="display: flex; flex-direction: column; gap: 8px;">
-        <label>
+        <label title="ページから自動で画像を取得します">
           <input type="radio" name="mode" value="ogp" checked>
           🌐 OGP画像 (自動取得)
         </label>
-        <label>
+        <label title="ブラウザで表示中の範囲を切り抜きます">
           <input type="radio" name="mode" value="viewport">
-          📸 スクショ (表示領域全体)
+          📸 スクショ (表示中の領域)
         </label>
-        <label title="左上から1280x720の範囲を切り抜きます">
+        <label title="左上から指定した範囲を切り抜きます(最大: 3840x2160, 最小: 128x128)">
           <input type="radio" name="mode" value="fixed">
-          ✂️ スクショ (固定 1280x720)
+          ✂️ スクショ (固定)
         </label>
-        <label style="color: #2563EB; font-weight: bold;">
+        <div style="display: flex; flex-direction: row; gap: 8px; margin-left: 20px;">
+          幅：<input type="number" style="width: calc(100%/4)" name="scr-width" max="3840" min="128" value="1280" placeholder="1280">
+          高さ：<input type="number" style="width: calc(100%/4)" name="scr-height" max="2160" min="128" value="720" placeholder="720">
+        </div>
+        <label title="カーソルで範囲選択して切り抜きます">
           <input type="radio" name="mode" value="range">
           📐 スクショ (範囲選択)
         </label>

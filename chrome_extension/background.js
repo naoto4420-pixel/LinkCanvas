@@ -7,7 +7,8 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
   if (!bookmark.url) return;
 
-  const settings = await chrome.storage.sync.get(['apiToken', 'autoSave', 'mode']); // modeも取得
+  // 保存データ取得
+  const settings = await chrome.storage.sync.get(['apiToken', 'autoSave', 'mode']);
 
   // 設定チェック
   if (!settings.apiToken) {
@@ -31,6 +32,8 @@ chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
         currentWindow: true
       });
 
+      // ブックマークボタンからブックマークした時のみ範囲選択を行う
+      // ※範囲選択モード時にブックマークマネージャーなどから手入力した場合はOGPで保存
       if (rangeTab && rangeTab.url === bookmark.url) {
         // contents.js用にメッセージを送る
         chrome.tabs.sendMessage(rangeTab.id, {
