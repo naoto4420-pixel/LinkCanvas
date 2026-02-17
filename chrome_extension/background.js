@@ -1,3 +1,6 @@
+// インポートファイル
+import { API_BASE_URL } from './config.js';
+
 // 拡張機能インストール時
 chrome.runtime.onInstalled.addListener(() => {
   console.log("LinkCanvas Extension installed.");
@@ -96,7 +99,7 @@ chrome.bookmarks.onRemoved.addListener(async (id, removeInfo) => {
   // ブックマークツリーノード取得
   const removeNodes = removeInfo.node;
   
-  // フォルダごと削除された場合、removeInfo.nodeが存在し、childrenを持っています
+  // 削除するブックマークがあるか確認
   if (removeNodes) {
     
     // 再帰的にすべてのURLを抽出する
@@ -157,7 +160,7 @@ async function saveLinkToApi(token, url, title, screenshot, crop = null) {
     if (crop) bodyData.crop = crop;
 
     // 送信
-    const response = await fetch('http://localhost:3000/api/v1/links', {
+    const response = await fetch(`${API_BASE_URL}/api/v1/links`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bodyData),
@@ -190,7 +193,7 @@ async function deleteLinkToApi(token, urls) {
       urls: urls,
     };
 
-    const response = await fetch('http://localhost:3000/api/v1/links', {
+    const response = await fetch(`${API_BASE_URL}/api/v1/links`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

@@ -83,3 +83,5 @@ gem 'rack-cors'
 group :production do
   gem 'pg'
 end
+
+# 拡張機能配布用Zipファイル作成
