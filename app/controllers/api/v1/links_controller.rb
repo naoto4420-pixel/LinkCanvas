@@ -57,6 +57,25 @@ module Api
         end
       end
 
+      def destroy
+        # 削除処理（トランザクションで実行）
+        ActiveRecord::Base.transaction do
+          # urls取得
+          urls = params[:urls]
+
+          if urls.present?
+            # URLが一致するものはすべて削除
+            Link.where(url: urls).destroy_all
+            
+            render json: { status: 'success', message: '削除しました' }, status: :ok
+          else
+            render json: { status: 'error', message: '削除するURLが指定されていません' }, status: :unprocessable_entity
+          end
+        rescue => e
+          render json: { status: 'error', message: e.message }, status: :internal_server_error
+        end
+      end
+
       private
 
       def link_params
