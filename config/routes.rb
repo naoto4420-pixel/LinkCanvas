@@ -11,7 +11,11 @@ Rails.application.routes.draw do
   # 拡張機能連携用のAPIルーティング
   namespace :api do
     namespace :v1 do
-      resources :links, only: [:create]
+      resources :links, only: [:create] do
+        collection do
+          delete :destroy
+        end
+      end
     end
   end
 
