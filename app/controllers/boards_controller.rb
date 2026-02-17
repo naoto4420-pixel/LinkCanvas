@@ -1,15 +1,6 @@
 class BoardsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_board, only: %i[ show edit update destroy ]
-
-  # GET /boards or /boards.json
-  def index
-    @boards = Board.all
-  end
-
-  # GET /boards/1 or /boards/1.json
-  def show
-  end
+  before_action :set_board, only: %i[ edit update destroy ]
 
   # GET /boards/new
   def new

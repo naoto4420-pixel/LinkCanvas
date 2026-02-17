@@ -45,7 +45,7 @@ export default class extends Controller {
     window.addEventListener('mouseup', this.dragEnd)
   }
 
-  // マウスを動かしている時（アロー関数でthisを固定）
+  // マウスを動かしている時
   drag = (event) => {
     if (!this.isDragging) return
 
