@@ -11,14 +11,16 @@
     "notifications"
   ],
   "host_permissions": [
-    "http://localhost:3000/*"
+    "http://localhost:3000/*",
+    "https://*.onrender.com/*" 
   ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "LinkCanvas設定"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
