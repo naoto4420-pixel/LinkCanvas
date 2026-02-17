@@ -1,16 +1,12 @@
 Rails.application.routes.draw do
 
-  root to: 'boards#index'
+  # ルートパス
+  root to: 'links#index'
 
+  # ルーティング
   resources :links
-  resources :boards
+  resources :boards, except: [:index, :show]
   devise_for :users
-
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
 
   # 拡張機能連携用のAPIルーティング
   namespace :api do
@@ -23,4 +19,11 @@ Rails.application.routes.draw do
     end
   end
 
+  # ヘルスチェック用（Rails 7.1以降のデフォルト）
+  get "up" => "rails/health#show", as: :rails_health_check
+
+  # 定義されていない全てのパス(*)をルートパスへリダイレクト
+  match '*path', to: redirect('/'), via: :all, constraints: lambda { |req|
+    req.path.exclude? 'rails/active_storage'
+  }
 end

@@ -1,37 +1,32 @@
 class LinksController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_link, only: %i[ show edit update destroy ]
+  before_action :set_link, only: %i[ edit update destroy ]
 
   # GET /links or /links.json
   def index
+
+    # ボード一覧を取得
+    @boards = current_user.boards.order(:created_at)
+
     # パラメータに board_id がある場合、そのボードのリンクだけを取得
     if params[:board_id]
       # 自分のボードの中から探す（他人のボードは見れないようにする）
-      @board = current_user.boards.find(params[:board_id])
-      @links = @board.links
-    else
-      # ボード指定がない場合（直接 /links にアクセスした場合など）
-      # ユーザーがボードを持っていれば、最初のボードに自動転送する
-      first_board = current_user.boards.first
-      if first_board
-        redirect_to links_path(board_id: first_board.id)
-      else
-        # ボードが1つもない場合は空の配列
-        @links = []
-      end
+      @active_board = current_user.boards.find(params[:board_id])
+      @links = @active_board.links
     end
-  rescue ActiveRecord::RecordNotFound
-    # 存在しないボードIDが指定された場合はボード一覧へ戻す
-    redirect_to boards_path, alert: "ボードが見つかりませんでした。"
-  end
 
-  # GET /links/1 or /links/1.json
-  def show
+    # ボード指定がない場合（直接 /links にアクセスした場合など）
+    # 最初のボードに自動転送する
+    @active_board ||= @boards.first
+
+    # ボードのリンク格納
+    @links = @active_board&.links
   end
 
   # GET /links/new
   def new
     @link = Link.new
+    @link.board_id = params[:board_id]
   end
 
   # GET /links/1/edit
@@ -47,11 +42,9 @@ class LinksController < ApplicationController
     
     respond_to do |format|
       if @link.save
-        format.html { redirect_to @link, notice: "Link was successfully created." }
-        format.json { render :show, status: :created, location: @link }
+        format.html { redirect_to links_path(board_id: @link.board_id), notice: "Link was successfully created.", status: :see_other }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @link.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -69,8 +62,8 @@ class LinksController < ApplicationController
         # URLが変更された場合、画像指定がなければOGP画像で更新する
         OgpCreator.new(@link).call if url_changed && !thumbnail_changed
 
-        format.html { redirect_to @link, notice: "Link was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @link }
+        format.html { redirect_to links_path(board_id: @link.board_id), notice: "Link was successfully updated.", status: :see_other }
+        format.json { render json: @link, status: :ok, location: @link }
       else
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @link.errors, status: :unprocessable_entity }
@@ -80,11 +73,11 @@ class LinksController < ApplicationController
 
   # DELETE /links/1 or /links/1.json
   def destroy
+    board_id = @link.board_id
     @link.destroy!
 
     respond_to do |format|
-      format.html { redirect_to links_path, notice: "Link was successfully destroyed.", status: :see_other }
-      format.json { head :no_content }
+      format.html { redirect_to links_path(board_id: board_id), notice: "Link was successfully destroyed.", status: :see_other }
     end
   end
 
