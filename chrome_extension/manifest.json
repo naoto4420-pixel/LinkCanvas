@@ -8,11 +8,13 @@
     "activeTab",
     "scripting",
     "storage",
-    "notifications"
+    "notifications",
+    "tabs"
   ],
   "host_permissions": [
     "http://localhost:3000/*",
-    "https://*.onrender.com/*" 
+    "https://*.onrender.com/*",
+    "<all_urls>"
   ],
   "action": {
     "default_popup": "popup.html",
