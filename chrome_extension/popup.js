@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               const height = settings.scrHeight || 720;
               const crop = { x: 0, y: 0, width: width, height: height };
               
-              sendToApi({ url: tab.url, title: tab.title, screenshot: croppedDataUrl, crop: crop});
+              sendToApi({ url: tab.url, title: tab.title, screenshot: dataUrl, crop: crop});
               
               break;
           }
