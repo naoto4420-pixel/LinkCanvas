@@ -59,13 +59,19 @@ https://linkcanvas-kdc7.onrender.com/
 
 サイドバーでボードを切り替え、メインエリア（キャンバス）でカードを自由に操作できる2ペインレイアウトを採用しました。
 
+[![Image from Gyazo](https://i.gyazo.com/a6258c9163f46b4d8d18ea1a6b0f57a5.png)](https://gyazo.com/a6258c9163f46b4d8d18ea1a6b0f57a5)
+
 ### 2. Chrome拡張機能との連携 & リアルタイム反映
 
 ブラウザで「★」ボタンを押すと、Rails側のDBに保存され、**リロードなしで**アプリ画面にカードが出現します（Turbo Streams / Redis使用）。
 
+[![Image from Gyazo](https://i.gyazo.com/fffd94ad0f34a86b21e2c4a4eaf2ec7e.gif)](https://gyazo.com/fffd94ad0f34a86b21e2c4a4eaf2ec7e)
+
 ### 3. ドラッグ＆ドロップ配置
 
 Stimulusを使用し、カードを直感的に配置できます。座標は非同期通信で自動保存されます。
+
+[![Image from Gyazo](https://i.gyazo.com/fa350c03ce44ed53166dff229330055a.gif)](https://gyazo.com/fa350c03ce44ed53166dff229330055a)
 
 ### 4. 高度なスクリーンショット機能
 
@@ -73,8 +79,11 @@ Stimulusを使用し、カードを直感的に配置できます。座標は非
 
 * **OGP画像**: 自動取得
 * **全体スクショ**: 表示領域全体
-* **固定切り抜き**: 1280x720で切り抜き
+* **固定切り抜き**: ページ左上から任意のサイズで切り抜き
+                   (最大3840×2160、最小128×128）
 * **範囲選択**: ドラッグした範囲のみを切り抜き
+
+[![Image from Gyazo](https://i.gyazo.com/2943b29818cf5b2a26d8f2dd9bbfd151.png)](https://gyazo.com/2943b29818cf5b2a26d8f2dd9bbfd151)
 
 ## データベース設計
 
@@ -147,5 +156,5 @@ RailsのHotwire (Turbo Streams) と Redis を組み合わせ、保存された�
 
 ## 制作時間
 
-約３週間
+約 3 週間
 
