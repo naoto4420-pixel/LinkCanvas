@@ -19,6 +19,6 @@
     <%= form.submit class: "flex-1 rounded-lg py-3 px-5 bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer transition shadow" %>
     
     <!-- キャンセルボタンの遷移先は、一覧画面へ戻る -->
-    <%= link_to "Cancel", boards_path, class: "flex-1 rounded-lg py-3 px-5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-center transition" %>
+    <%= link_to "Cancel", boards_path(board), class: "flex-1 rounded-lg py-3 px-5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-center transition" %>
   </div>
 <% end %>

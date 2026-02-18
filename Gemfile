@@ -44,8 +44,14 @@ gem "bootsnap", require: false
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "pry-rails"
-  gem "mysql2", "~> 0.5"
   gem "debug", platforms: %i[ mri mingw x64_mingw ]
+
+  # テストフレームワーク
+  gem "rspec-rails"
+  # テストデータ作成支援
+  gem "factory_bot_rails"
+  # ダミーデータ生成
+  gem "faker"
 end
 
 group :development do
