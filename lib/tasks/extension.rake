@@ -28,7 +28,7 @@ namespace :extension do
 
       # 4. ZIP圧縮
       puts "🗜 ZIPファイルを作成中..."
-      Zip::File.open(output_zip, Zip::File::CREATE) do |zipfile|
+      Zip::File.open(output_zip, create: true) do |zipfile|
         Dir.glob(extension_dir.join('**', '*')).each do |file|
           # config.js 以外のファイルも含める
           next if File.directory?(file)

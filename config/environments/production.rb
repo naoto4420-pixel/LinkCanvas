@@ -94,4 +94,12 @@ Rails.application.configure do
   # ]
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+
+  # 本番環境のホスト名(ドメイン)を設定
+  ##Renderが提供する環境変数 RENDER_EXTERNAL_HOSTNAME を使用
+  config.action_controller.default_url_options = { host: ENV["RENDER_EXTERNAL_HOSTNAME"], protocol: "https" }
+  config.action_mailer.default_url_options = { host: ENV["RENDER_EXTERNAL_HOSTNAME"], protocol: "https" }
+  
+  # Active Storage等のURL生成にも適用
+  Rails.application.routes.default_url_options = { host: ENV["RENDER_EXTERNAL_HOSTNAME"], protocol: "https" }
 end
