@@ -135,7 +135,7 @@ rails db:migrate
 ```
 ※Chrome拡張機能は LinkCanvas\chrome_extension を直接読み込んでください。
 
-※`public/linkcanvas-extension.zip` は、Render環境用のため、ローカルでは使用できません。
+※`linkcanvas-extension.zip` は、Render環境用のため、ローカルでは使用できません。
 
 ## 工夫したポイント
 
