@@ -43,8 +43,9 @@ gem "bootsnap", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ]
   gem "pry-rails"
+  gem "mysql2", "~> 0.5"
+  gem "debug", platforms: %i[ mri mingw x64_mingw ]
 end
 
 group :development do
@@ -81,7 +82,6 @@ gem 'rack-cors'
 
 # Renderデプロイ用DB
 group :production do
-  gem 'pg'
+  gem "pg"
+  gem "redis" # Action Cable用
 end
-
-# 拡張機能配布用Zipファイル作成
