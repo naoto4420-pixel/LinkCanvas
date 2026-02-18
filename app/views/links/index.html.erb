@@ -17,26 +17,36 @@
       
       <% @boards.each do |board| %>
         <% is_active = (@active_board&.id == board.id) %>
-        <%= link_to links_path(board_id: board.id), 
-            data: { turbo_action: "replace" },
-            class: "group flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors #{is_active ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}" do %>
+        <div class="group flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors <%= is_active ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100' %>">
           
-          <div class="flex items-center truncate">
+          <!-- メイン: ボード選択リンク (左側の広いエリア) -->
+          <%= link_to links_path(board_id: board.id), 
+              data: { turbo_action: "replace" },
+              class: "flex-1 flex items-center truncate mr-2" do %>
             <span class="mr-3 text-lg opacity-70">
               <%= is_active ? '📂' : '📁' %>
             </span>
             <span class="truncate"><%= board.name %></span>
-          </div>
+          <% end %>
           
-          <% if is_active %>
-            <!-- アクティブ時のみ編集・削除メニューを表示 (ホバーで出現) -->
-            <div class="hidden group-hover:flex items-center ml-2">
-              <%= link_to edit_board_path(board), class: "p-1 text-gray-400 hover:text-blue-600", title: "名前変更" do %>
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+          <!-- サブ: 操作ボタン (アクティブ時またはホバー時に表示) -->
+          <% if is_active && (board != @boards.first) %>
+            <div class="flex items-center gap-1">
+              <!-- 編集ボタン -->
+              <%= link_to edit_board_path(board), class: "p-1.5 text-gray-400 hover:text-blue-600 hover:bg-white rounded transition", title: "名前変更" do %>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+              <% end %>
+              
+              <!-- 削除ボタン -->
+              <%= link_to board, 
+                  data: { turbo_method: :delete, turbo_confirm: "「#{board.name}」を削除しますか？\n中に含まれるリンクも全て削除されます。" }, 
+                  class: "p-1.5 text-gray-400 hover:text-red-500 hover:bg-white rounded transition", 
+                  title: "削除" do %>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
               <% end %>
             </div>
           <% end %>
-        <% end %>
+        </div>
       <% end %>
 
       <!-- ボード作成ボタン -->
