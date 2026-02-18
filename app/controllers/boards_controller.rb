@@ -18,11 +18,9 @@ class BoardsController < ApplicationController
 
     respond_to do |format|
       if @board.save
-        format.html { redirect_to @board, notice: "Board was successfully created." }
-        format.json { render :show, status: :created, location: @board }
+        format.html { redirect_to links_path(board_id: @board.id), notice: "Board was successfully created." }
       else
         format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @board.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -31,11 +29,9 @@ class BoardsController < ApplicationController
   def update
     respond_to do |format|
       if @board.update(board_params)
-        format.html { redirect_to @board, notice: "Board was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @board }
+        format.html { redirect_to links_path(board_id: @board.id), notice: "Board was successfully updated.", status: :see_other }
       else
         format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @board.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -45,8 +41,7 @@ class BoardsController < ApplicationController
     @board.destroy!
 
     respond_to do |format|
-      format.html { redirect_to boards_path, notice: "Board was successfully destroyed.", status: :see_other }
-      format.json { head :no_content }
+      format.html { redirect_to root_path, notice: "Board was successfully destroyed.", status: :see_other }
     end
   end
 
