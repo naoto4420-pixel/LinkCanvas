@@ -56,6 +56,19 @@
       <% end %>
     </div>
 
+    <!-- ヘルプモーダル -->
+    <div data-controller="help">
+      <!-- ヘルプボタン (右下に固定) -->
+      <button data-action="click->help#open" 
+              class="fixed bottom-6 right-6 w-12 h-12 bg-white text-gray-600 rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors z-50"
+              title="使い方ガイド">
+        <span class="text-xl font-bold">?</span>
+      </button>
+
+      <!-- モーダル読み込み -->
+      <%= render "help_modal" %>
+    </div>
+
     <!-- 下部: ユーザー情報 & 拡張機能 -->
     <div class="p-4 border-t border-gray-200 bg-gray-50">
       <!-- 拡張機能リンク -->
