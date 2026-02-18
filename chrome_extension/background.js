@@ -81,7 +81,32 @@ chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
         });
       }
       break;
+    case 'fixed':
+      console.log("固定切り抜きモード起動...");
+      // 【固定切り抜きモード】の場合
+      const [fixedTab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true
+      });
 
+      if (fixedTab) {
+        // 幅高さの取得
+        const rcSize = await chrome.storage.sync.get(['scrWidth', 'scrHeight']);
+
+        const crop = {
+          x: 0,
+          y: 0,
+          width: rcSize.scrWidth || 1280,
+          height: rcSize.scrHeight || 720
+        };
+
+        chrome.tabs.captureVisibleTab(null, {
+          format: 'png'
+        }, (dataUrl) => {
+          saveLinkToApi(settings.apiToken, bookmark.url, bookmark.title, dataUrl, crop);
+        });
+      }
+      break;
     default:
       // 【OGPモード(デフォルト)】の場合
       // settings.mode が 'ogp' または未設定の場合など
@@ -184,7 +209,7 @@ async function saveLinkToApi(token, url, title, screenshot, crop = null) {
         type: 'basic',
         iconUrl: 'icon128.png',
         title: 'LinkCanvas',
-        message: crop ? '範囲選択スクショを保存しました！' : '保存しました！'
+        message: crop ? 'スクショを保存しました！' : '保存しました！'
       });
     } else {
       console.error("保存失敗");
