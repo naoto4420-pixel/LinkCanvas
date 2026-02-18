@@ -2,7 +2,7 @@
 import { API_BASE_URL } from './config.js';
 
 // 拡張機能インストール時
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () =>{
   console.log("LinkCanvas Extension installed.");
 });
 
@@ -38,18 +38,29 @@ chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
       // ブックマークボタンからブックマークした時のみ範囲選択を行う
       // ※範囲選択モード時にブックマークマネージャーなどから手入力した場合はOGPで保存
       if (rangeTab && rangeTab.url === bookmark.url) {
-        // contents.js用にメッセージを送る
-        chrome.tabs.sendMessage(rangeTab.id, {
-          action: "start_selection"
-        });
+        try {
+          // contents.js用にメッセージを送る
+          await chrome.tabs.sendMessage(rangeTab.id, {
+            action: "start_selection"
+          });
 
-        // 通知で誘導
-        chrome.notifications.create({
-          type: 'basic',
-          iconUrl: 'icon128.png',
-          title: 'LinkCanvas',
-          message: '画面をドラッグして、サムネイルにする範囲を選択してください。'
-        });
+          // 成功したら誘導通知
+          chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'icon128.png',
+            title: 'LinkCanvas',
+            message: '画面をドラッグして、サムネイルにする範囲を選択してください。'
+          });
+        } catch (error) {
+          console.error("Content Scriptへの接続失敗:", error);
+          // 失敗したらリロードを促す通知を出す
+          chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'icon128.png',
+            title: 'LinkCanvas エラー',
+            message: '範囲選択を開始できませんでした。ページをリロードしてから再試行してください。'
+          });
+        }
       } else {
         console.warn("ブックマークしたページが開かれていません。OGPで保存します。");
         saveLinkToApi(settings.apiToken, bookmark.url, bookmark.title, null);
@@ -70,7 +81,32 @@ chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
         });
       }
       break;
+    case 'fixed':
+      console.log("固定切り抜きモード起動...");
+      // 【固定切り抜きモード】の場合
+      const [fixedTab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true
+      });
 
+      if (fixedTab) {
+        // 幅高さの取得
+        const rcSize = await chrome.storage.sync.get(['scrWidth', 'scrHeight']);
+
+        const crop = {
+          x: 0,
+          y: 0,
+          width: rcSize.scrWidth || 1280,
+          height: rcSize.scrHeight || 720
+        };
+
+        chrome.tabs.captureVisibleTab(null, {
+          format: 'png'
+        }, (dataUrl) => {
+          saveLinkToApi(settings.apiToken, bookmark.url, bookmark.title, dataUrl, crop);
+        });
+      }
+      break;
     default:
       // 【OGPモード(デフォルト)】の場合
       // settings.mode が 'ogp' または未設定の場合など
@@ -173,7 +209,7 @@ async function saveLinkToApi(token, url, title, screenshot, crop = null) {
         type: 'basic',
         iconUrl: 'icon128.png',
         title: 'LinkCanvas',
-        message: crop ? '範囲選択スクショを保存しました！' : '保存しました！'
+        message: crop ? 'スクショを保存しました！' : '保存しました！'
       });
     } else {
       console.error("保存失敗");

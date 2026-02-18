@@ -42,9 +42,6 @@ module Api
             OgpCreator.new(@link).call
           end
 
-          # 使用できない画像形式、または画像添付失敗の場合はViewでデフォルト画像を表示する設定
-          ensure_thumbnail_attached(@link)
-
           # データ保存
           @link.save!
           render json: { message: message, link: @link }, status: :created
@@ -112,17 +109,19 @@ module Api
         # モードで分岐
         case mode
         when 'RECT'
-          Tempfile.create([filename, '.png'], binmode: true) do |file|
-            # データを一時ファイルに書き込んでシーク位置を先頭に戻す
-            file.write(decoded_data)
-            file.rewind
+          # 一時ファイル
+          temp_file = Tempfile.new([filename, '.png'], binmode: true)
+
+          begin
+            temp_file.write(decoded_data)
+            temp_file.rewind
 
             # crop情報取得
             crop_params = params.require(:crop).permit(:x, :y, :width, :height)
 
             # 画像を選択範囲で切り取る
             processed = ImageProcessing::Vips
-              .source(file)
+              .source(temp_file)
               .crop(crop_params[:x].to_i,
                     crop_params[:y].to_i,
                     crop_params[:width].to_i,
@@ -130,14 +129,21 @@ module Api
               )
               .call
 
-            # 画像保存
+            # 加工後のファイルを読み込んで StringIO に格納してからアタッチ
+            ##一時ファイルが消えてもデータが残せる
             @link.thumbnail.attach(
-              io: processed,
+              io: StringIO.new(File.binread(processed.path)),
               filename: filename,
               content_type: 'image/png'
             )
 
+            # ImageProcessingが作った一時ファイルを削除
+            processed.close! if processed.respond_to?(:close!)
+            
             return 'AS_OK'
+          ensure
+            # 最初に作った一時ファイルを削除
+            temp_file.close!
           end
         when 'FULL' # 通常のスクリーンショットの場合
           # 画像保存
@@ -166,20 +172,6 @@ module Api
         rescue final_error
           # すべてのスクリーンショット保存が失敗したらロールバック
           raise final_error
-        end
-      end
-
-      # デフォルト画像表示設定メソッド
-      def ensure_thumbnail_attached(link)
-        # 画像が添付されており、かつ一般的な画像形式(JPEG/PNG/GIF)なら何もしない
-        if link.thumbnail.attached?
-          if link.thumbnail.content_type.in?(%w[image/jpeg image/png image/gif])
-            return
-          else
-            # SVGなどリサイズできない形式の場合は、一度削除してViewでデフォルト画像に置き換える
-            Rails.logger.warn "Unsupported image type detected: #{link.thumbnail.content_type}. Replacing with default."
-            link.thumbnail.purge
-          end
         end
       end
     end

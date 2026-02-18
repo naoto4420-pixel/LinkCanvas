@@ -181,27 +181,12 @@ document.addEventListener('DOMContentLoaded', async () => {
               
               break;
             case 'fixed':
-              // 固定切り抜き: Canvasを使って加工
-              const img = new Image();
-              img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const width = settings.scrWidth || 1280;
-                const height = settings.scrHeight || 720;
-                
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(img, 0, 0, width, height, 0, 0, width, height);
-                
-                const croppedDataUrl = canvas.toDataURL('image/png');
-                sendToApi({ url: tab.url, title: tab.title, screenshot: croppedDataUrl });
-              };
-              // 画像読み込みエラーハンドリング
-              img.onerror = (e) => {
-                 console.error("画像処理エラー", e);
-                 statusDiv.textContent = '画像処理に失敗しました';
-              };
-              img.src = dataUrl;
+              // 固定切り抜き: crop情報を設定
+              const width = settings.scrWidth || 1280;
+              const height = settings.scrHeight || 720;
+              const crop = { x: 0, y: 0, width: width, height: height };
+              
+              sendToApi({ url: tab.url, title: tab.title, screenshot: croppedDataUrl, crop: crop});
               
               break;
           }
