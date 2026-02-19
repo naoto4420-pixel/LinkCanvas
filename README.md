@@ -117,10 +117,29 @@ Stimulusを使用し、カードを直感的に配置できます。座標は非
 
 ## ローカルでの動作方法
 
+### 1. 前提条件 (Prerequisites)
+
+   以下のソフトウェアがインストールされている環境を想定しています。
+
+* Ruby: 3.2.2
+
+* Rails: 7.0系
+
+* MySQL: 8.0 (開発環境のデータベース)
+
+* libvips: 画像処理（リサイズ等）に必須
+
+  * Mac: brew install vips
+
+  * Ubuntu: sudo apt install libvips  
+    ※WindowsOSをお使いの方は、Ubuntuをインストールしてから実行してください。
+
+
+### 2. 環境構築 & 起動 (Windowsをお使いの方はUbuntuで実行してください)
 ```bash
 # リポジトリのクローン
-git clone [https://github.com/](https://github.com/)[あなたのユーザー名]/link_canvas.git
-cd link_canvas
+git clone https://github.com/naoto4420-pixel/LinkCanvas.git
+cd LinkCanvas
 
 # 依存ライブラリのインストール
 bundle install
